@@ -99,7 +99,8 @@ app.put("/api/notes/:id", (request, response) => {
       content: body.content,
       important: body.important,
     };
-    Note.save(updatedNote)
+    return note
+      .save(updatedNote)
       .then((savedNote) => {
         response.json(savedNote);
       })
