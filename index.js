@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const Note = require("./models/note");
+const e = require("express");
 
 const app = express();
 
@@ -25,55 +27,65 @@ let notes = [
   },
 ];
 
-app.get("/", (request, response) => {
-  response.send("<h1>Hello express</h1>");
-});
-
 app.get("/api/notes", (request, response) => {
-  response.json(notes);
+  Note.find({}).then((notes) => {
+    response.json(notes);
+  });
 });
 
 app.get("/api/notes/:id", (request, response) => {
   const id = request.params.id;
-  const note = notes.find((note) => note.id === id);
-  if (note) {
-    response.json(note);
-  } else {
-    // Dümdüz bitirmək əvəzinə mesaj göndərmək:
-    response
-      .status(404)
-      .send({ error: "Axtardığınız qeyd verilənlər bazasında tapılmadı!" });
-  }
+  Note.findById(id)
+    .then((note) => {
+      if (note) {
+        response.json(note);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      response.status(400).send({ error: "malformatted id" });
+    });
 });
 
 app.delete("/api/notes/:id", (request, response) => {
   const id = request.params.id;
-  notes = notes.filter((note) => note.id !== id);
-
-  response.status(204).end();
+  Note.findByIdAndDelete(id)
+    .then((person) => {
+      if (person) {
+        response.status(204).end();
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      response.status(400).send({ error: "malformatted id" });
+    });
 });
-
-const generateid = () => {
-  const maxId = notes.length > 0 ? Math.max(...notes.map((n) => +n.id)) : 0;
-  return String(maxId + 1);
-};
 
 app.post("/api/notes", (request, response) => {
   const body = request.body;
-
   if (!body.content) {
-    return response.status(400).send({
-      error: "content missed",
+    return response.status(400).json({
+      error: "content missing",
     });
   }
 
-  const note = {
+  const note = new Note({
     content: body.content,
     important: body.important || false,
-    id: generateid(),
-  };
-  notes = notes.concat(note);
-  response.json(note);
+  });
+  note
+    .save()
+    .then((savedNote) => {
+      response.json(savedNote);
+    })
+    .catch((error) => {
+      console.log(error);
+      response.status(400).send({ error: "saving note failed" });
+    });
 });
 
 const PORT = process.env.PORT || 3001;
@@ -81,4 +93,3 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`started at ${PORT}`);
 });
-console.log([1, 2, 3]);
