@@ -94,20 +94,18 @@ app.put("/api/notes/:id", (request, response) => {
     if (!note) {
       return response.status(404).end();
     }
-    const body = request.body;
-    const updatedNote = {
-      content: body.content,
-      important: body.important,
-    };
-    return note
-      .save(updatedNote)
-      .then((savedNote) => {
-        response.json(savedNote);
+    note.important = body.important;
+    note.content = body.content;
+    note
+      .save()
+      .then((updatedNote) => {
+        response.json(updatedNote);
       })
       .catch((error) => {
         console.log(error);
         response.status(400).send({ error: "updating note failed" });
       });
+    return;
   });
 });
 
