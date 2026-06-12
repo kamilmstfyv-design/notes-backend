@@ -97,7 +97,7 @@ app.put("/api/notes/:id", (request, response) => {
     }
     note.important = body.important;
     note.content = body.content;
-    note
+    return note
       .save()
       .then((updatedNote) => {
         response.json(updatedNote);
