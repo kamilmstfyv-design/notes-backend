@@ -15,14 +15,8 @@ mongoose
   });
 
 const noteSchema = new mongoose.Schema({
-  content: {
-    type: String,
-    required: true,
-  },
-  important: {
-    type: Boolean,
-    default: false,
-  },
+  content: String,
+  important: Boolean,
 });
 
 noteSchema.set("toJSON", {

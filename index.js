@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const Note = require("./models/note");
-const e = require("express");
 
 const app = express();
 
@@ -87,6 +86,28 @@ app.post("/api/notes", (request, response) => {
       console.log(error);
       response.status(400).send({ error: "saving note failed" });
     });
+});
+
+app.put("/api/notes/:id", (request, response) => {
+  const id = request.params.id;
+  Note.findById(id).then((note) => {
+    if (!note) {
+      return response.status(404).end();
+    }
+    const body = request.body;
+    const updatedNote = {
+      content: body.content,
+      important: body.important,
+    };
+    Note.save(updatedNote)
+      .then((savedNote) => {
+        response.json(savedNote);
+      })
+      .catch((error) => {
+        console.log(error);
+        response.status(400).send({ error: "updating note failed" });
+      });
+  });
 });
 
 const PORT = process.env.PORT || 3001;
